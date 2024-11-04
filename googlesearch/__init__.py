@@ -26,13 +26,14 @@ def _req(term, results, lang, start, proxies, timeout):
 
 
 class SearchResult:
-    def __init__(self, url, title, description):
+    def __init__(self, url, title, description, name):
         self.url = url
         self.title = title
         self.description = description
+        self.name = name
 
     def __repr__(self):
-        return f"SearchResult(url={self.url}, title={self.title}, description={self.description})"
+        return f"SearchResult(url={self.url}, title={self.title}, description={self.description}, name = {self.name})"
 
 
 def search(term, num_results=10, lang="en", proxy=None, advanced=False, sleep_interval=0, timeout=5):
@@ -66,14 +67,15 @@ def search(term, num_results=10, lang="en", proxy=None, advanced=False, sleep_in
             title = result.find("h3")
             description_box = result.find(
                 "div", {"style": "-webkit-line-clamp:2"})
+            org_name = result.find("span", attrs={"class": "VuuXrf"})
             if description_box:
                 description = description_box.text
                 if link and title and description:
                     start += 1
                     if advanced:
-                        yield SearchResult(link["href"], title.text, description)
+                        yield SearchResult(link["href"], title.text, description, org_name.text)
                     else:
-                        yield link["href"]
+                        yield SearchResult(link["href"], None, None, None)
         sleep(sleep_interval)
 
         if start == 0:
